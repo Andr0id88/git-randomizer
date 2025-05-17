@@ -6,5 +6,5 @@
 # build output
 /bin/
 
-# todo-list for the project
-todo.md
+# helperscripts for the project
+/scripts
