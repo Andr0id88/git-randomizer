@@ -51,7 +51,7 @@ but HR might not. You’ve been warned.
 | **Commit messages** | Takes your boring message and runs it through Google Gemini, rewriting it in the chosen persona, mood, and length. Interactive “Yes / generate again / use original / cancel” loop. |
 | **Branch names** | Enter a base idea – gitr returns a short/medium kebab-case slug in character (and even `git checkout -b` for you if you approve). |
 | **Random everything** | `--random`, `--group cartoons`, or config defaults like `default_mood: random` re-roll persona/mood every generation. |
-| **Groups** | Built-in sets: `trailer_park_boys`, `cartoons`, `politicians`, `celebrities`, `literary`, `misc` (plus anything you add). |
+| **Groups** | Built-in sets: `supervillains`, `cartoons`, `politicians`, `celebrities`, `conspiracy_theorists`, `misc` (plus many more and anything you add). |
 | **Tagline** | After a successful commit, adds a one-liner in a separate persona (“Yoda says: Committed, your code is”). |
 | **pass secret** | Stores `GEMINI_API_KEY` in `pass` so you don’t leak it into your shell history. |
 | **Config + autosave** | First run drops a commented `~/.config/git-randomizer/git-randomizer.yaml`. Use `--save` to write new defaults from CLI flags. |
@@ -243,7 +243,7 @@ and not nearly enough that say things like:
 ### So really... why?
 
 - Because `git log` should read like the **diary of a caffeinated raccoon**.
-- Because you’ve always wanted to `git blame` a bug on **Ricky from Trailer Park Boys**.
+- Because you’ve always wanted to `git blame` a bug on **Alex Jones** screaming about interdimensional bugs introduced by globalist devs.
 - Because every repo deserves a branch named `feature/screw-you-guys-im-going-home`.
 - Because you once typed `fix thing` and felt a part of you die inside.
 - Most importantly, because programming is supposed to be **fun.**
