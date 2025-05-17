@@ -201,12 +201,9 @@ gitr commit --list-groups        # group listed too
 
 Because git history is for humans (and occasionally raccoons).
 A touch of humor:
-
-    breaks the monotony of “Refactor util” commits,
-
-    sparks joy in code review,
-
-    reminds you that programming is supposed to be fun.
+* Breaks the monotony of “Refactor util” commits,
+* Sparks joy in code review,
+* And most important, reminds you that programming is supposed to be fun.
 
 If your corporate guidelines demand “conventional commits,” run gitr on a personal fork, chuckle, then cherry-pick a sensible message upstream. Everybody wins.
 
