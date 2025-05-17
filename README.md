@@ -139,18 +139,17 @@ gitr branch -g cartoons -r
 gitr commit --help   # full list
 
 # Common flags
--s, --style     persona (string or 'random')
--g, --group     pick random persona from group
--r, --random    fully random persona (ignores --style)
--m, --mood      playful | sarcastic | ... | random
--l, --length    short | medium | long
--y, --yes       skip approval step
+-s, --style       persona (string or 'random')
+-g, --group       pick random persona from group
+-r, --random      fully random persona (ignores --style)
+-m, --mood        playful | sarcastic | ... | random
+-l, --length      short | medium | long
+-y, --yes         skip approval step
 -p, --pass-secret path/in/pass
--S, --save      write these flags back to YAML defaults
+-S, --save        write these flags back to YAML defaults
+-L / -G           list all styles / groups
 
-gitr branch [...]   # same vibe, plus:
-                    #   generates slug & checks out branch
--L / -G             # list all styles / groups
+gitr branch [...]   # same vibe, plus: generates slug & checks out branch
 ```
 
 ---
