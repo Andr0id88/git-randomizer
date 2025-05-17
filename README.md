@@ -1,4 +1,4 @@
-# gitr ― the **Git Randomizer**
+# gitr - the **Git Randomizer**
 
 Why settle for:
 
