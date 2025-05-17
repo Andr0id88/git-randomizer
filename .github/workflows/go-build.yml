@@ -33,45 +33,43 @@ jobs:
       with:
         go-version: "1.22"
 
-    # -------- arch-scoped cache --------
-    - name: Cache modules + build cache
+    # cache unique per OS/arch
+    - name: Cache modules
       uses: actions/cache@v3
       with:
-        # each arch gets its own directories
         path: |
-          ~/go/pkg/mod/${{ matrix.goos }}-${{ matrix.arch }}
-          ~/.cache/go-build/${{ matrix.goos }}-${{ matrix.arch }}
-        key: |
-          go-${{ matrix.goos }}-${{ matrix.arch }}-${{ hashFiles('**/go.sum') }}
+          ~/go/pkg/mod
+          ~/.cache/go-build
+        key: go-${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
-          go-${{ matrix.goos }}-${{ matrix.arch }}-
+          go-${{ runner.os }}-${{ matrix.arch }}-
 
-    # -------- build --------
+    - name: Vet & Test
+      run: |
+        go vet ./...
+        go test ./... || true   # remove '|| true' once you add tests
+
+    # -------- compile binary (no zip!) --------
     - name: Build (${{ matrix.goos }}-${{ matrix.arch }})
       id: build
       env:
         GOOS: ${{ matrix.goos }}
         GOARCH: ${{ matrix.arch }}
         CGO_ENABLED: 0
-        # point Go to our arch-specific cache dirs
-        GOMODCACHE: ~/go/pkg/mod/${{ matrix.goos }}-${{ matrix.arch }}
-        GOCACHE: ~/.cache/go-build/${{ matrix.goos }}-${{ matrix.arch }}
       run: |
         set -euo pipefail
         EXT=""
-        if [ "$GOOS" = "windows" ]; then EXT=".exe"; fi
+        if [ "${GOOS}" = "windows" ]; then EXT=".exe"; fi
         OUT="gitr-${GOOS}-${GOARCH}${EXT}"
-        go vet ./...
-        go test ./... || true
         go build -v -o "$OUT" .
-        echo "bin=$OUT" >> $GITHUB_OUTPUT
+        echo "out=$OUT" >> "$GITHUB_OUTPUT"
 
-    # -------- upload --------
+    # -------- upload binary; artifact action adds the single zip --------
     - name: Upload artifact
       if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ steps.build.outputs.bin }}
-        path: ${{ steps.build.outputs.bin }}
+        name: ${{ steps.build.outputs.out }}   # artifact name
+        path: ${{ steps.build.outputs.out }}   # binary file
         if-no-files-found: error
 
