@@ -46,7 +46,7 @@ jobs:
 
     # ---------- Cross-compile & zip ----------
     - name: Build gitr (${{ matrix.goos }}-${{ matrix.arch }})
-      id: build-binary
+      id: build
       env:
         GOOS:   ${{ matrix.goos }}
         GOARCH: ${{ matrix.arch }}
@@ -55,20 +55,15 @@ jobs:
         set -euo pipefail
         EXT=""
         if [ "${GOOS}" = "windows" ]; then EXT=".exe"; fi
-
-        echo "🔧 building for $GOOS/$GOARCH"
         go build -v -o gitr${EXT} .
+        echo "bin_name=gitr${EXT}" >> "$GITHUB_OUTPUT"
 
-        ZIP_NAME="gitr-${GOOS}-${GOARCH}.zip"
-        zip -9 -q $ZIP_NAME gitr${EXT}
-        echo "zip_name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
-
-    # ---------- Upload only if build step succeeded ----------
     - name: Upload artifact
       if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ steps.build-binary.outputs.zip_name }}
-        path: ${{ steps.build-binary.outputs.zip_name }}
+        name: gitr-${{ matrix.goos }}-${{ matrix.arch }}
+        path: ${{ steps.build.outputs.bin_name }}
         if-no-files-found: error
+
 
