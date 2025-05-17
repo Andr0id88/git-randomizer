@@ -16,6 +16,6 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-## [1.0.0] - 2025-05-10
+## [1.0.0] - 2025-05-17
 ### Initial release
 - Core impersonation script with support for persona selection and mood-based responses.
