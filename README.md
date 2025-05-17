@@ -35,25 +35,72 @@ but HR might not. You’ve been warned.
 
 ## Quick start
 
-TODO
-Add release link
 
+> ⚠️ **Note:** A Google Gemini API key is required to use `git-randomizer`, regardless of how it's installed.
+
+---
+
+### 🔐 Step 1: Set up your Gemini API key
+
+```bash
+# 1. Get your API key from Google AI Studio:
+https://aistudio.google.com/apikey
+
+# 2. Export it as an environment variable:
+export GEMINI_API_KEY=your-api-key
+
+# (Optional) Store it in pass:
+pass insert gemini_api_key
+
+# Then configure your YAML to use it:
+# $HOME/.config/gitrandomizer/gitrandomizer.yaml
+# (This is set as default, and uses env if it does not exsist)
+# pass_secret: gemini_api_key
+```
+---
+
+### 💾 Step 2: Install git-randomizer
+
+#### 🔧 Option A - 1-liner (recommended)
+
+```bash
+curl -sSL https://raw.githubusercontent.com/Andr0id88/git-randomizer/main/install.sh | bash
+```
+*Installs the gitr binary to ~/.local/bin. Make sure that directory is in your PATH.*
+
+#### 📦 Option B: Download from the Release Page
+```bash
+
+# 1. Visit the latest release and download the binary for your OS:
+https://github.com/Andr0id88/git-randomizer/releases/latest
+
+# 2. Make the binary executable:
+chmod +x gitr
+
+# 3. Move it to a directory in your PATH (e.g.):
+mv gitr ~/.local/bin/
+```
+
+#### 🛠️ Option C: Build from Source
 ```bash
 # 1. clone and build
 git clone https://Andr0id88/git-randomizer.git
 cd git-randomizer
 go mod tidy && go build -o ~/.local/bin/gitr .
+chmod +x ~/.local/bin/gitr
+```
 
-# 2. Create your Gemini API key
-# Visit google ai studio and create an api key:
-# https://aistudio.google.com/apikey
+---
 
-# 3. export (or store in pass) your Gemini API key
-export GEMINI_API_KEY=YOUR_KEY
-# optional:
-pass insert gemini_api_key   # then set pass_secret in YAML
+#### ✅ Step 3: Verify Installation
+```bash
+gitr --help
+```
 
-# 3. use it in a repo
+---
+
+#### 🧪 Step 4: Try It Out!
+```bash
 cd ~/code/my-project
 gitr commit -s "deadpool"
 gitr branch -g cartoons -r
