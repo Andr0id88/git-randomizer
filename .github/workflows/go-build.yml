@@ -13,16 +13,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - goos: linux
-            arch: amd64
-          - goos: linux
-            arch: arm64
-          - goos: darwin
-            arch: amd64
-          - goos: darwin
-            arch: arm64
-          - goos: windows
-            arch: amd64
+          - goos: linux   arch: amd64
+          - goos: linux   arch: arm64
+          - goos: darwin  arch: amd64
+          - goos: darwin  arch: arm64
+          - goos: windows arch: amd64
 
     steps:
     - name: Checkout
@@ -33,45 +28,52 @@ jobs:
       with:
         go-version: "1.22"
 
-    - name: Cache modules
+    # -------- arch-scoped cache --------
+    - name: Cache Go build & modules
       uses: actions/cache@v3
       with:
         path: |
-          ${HOME}/go/pkg/mod/${{ matrix.goos }}-${{ matrix.arch }}
-          ${HOME}/.cache/go-build/${{ matrix.goos }}-${{ matrix.arch }}
-        key: go-${{ matrix.goos }}-${{ matrix.arch }}-${{ hashFiles('**/go.sum') }}
+          ${{ env.HOME }}/.cache/gitr/${{ matrix.goos }}-${{ matrix.arch }}
+        key: gitr-${{ matrix.goos }}-${{ matrix.arch }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
-          go-${{ matrix.goos }}-${{ matrix.arch }}-
+          gitr-${{ matrix.goos }}-${{ matrix.arch }}-
 
-    - name: Vet & Test
-      run: |
-        go vet ./...
-        go test ./... || true   # remove '|| true' once you add tests
-
+    # -------- build (sets absolute cache paths) --------
     - name: Build (${{ matrix.goos }}-${{ matrix.arch }})
       id: build
       env:
-        GOOS: ${{ matrix.goos }}
+        GOOS:   ${{ matrix.goos }}
         GOARCH: ${{ matrix.arch }}
         CGO_ENABLED: 0
-        GOMODCACHE: ${HOME}/go/pkg/mod/${{ matrix.goos }}-${{ matrix.arch }}
-        GOCACHE:    ${HOME}/.cache/go-build/${{ matrix.goos }}-${{ matrix.arch }}
       run: |
         set -euo pipefail
+
+        # absolute per-arch cache dirs
+        CACHE_BASE="$HOME/.cache/gitr/${GOOS}-${GOARCH}"
+        export GOMODCACHE="$CACHE_BASE/gomod"
+        export GOCACHE="$CACHE_BASE/gocache"
+        mkdir -p "$GOMODCACHE" "$GOCACHE"
+
         EXT=""
         if [ "$GOOS" = "windows" ]; then EXT=".exe"; fi
-        OUT="gitr${EXT}"
-        go build -v -o "$OUT" .
-        DESTDIR="dist/${GOOS}-${GOARCH}"
-        mkdir -p "$DESTDIR"
-        mv "$OUT" "$DESTDIR/$OUT"
-        echo "dir=$DESTDIR" >> "$GITHUB_OUTPUT"
+        BIN="gitr${EXT}"
 
+        go vet ./...
+        go test ./... || true
+
+        go build -v -o "$BIN" .
+
+        DIST="dist/${GOOS}-${GOARCH}"
+        mkdir -p "$DIST"
+        mv "$BIN" "$DIST/$BIN"
+        echo "dist=$DIST" >> "$GITHUB_OUTPUT"
+
+    # -------- upload binary (action zips once) --------
     - name: Upload artifact
       if: success()
       uses: actions/upload-artifact@v4
       with:
         name: gitr-${{ matrix.goos }}-${{ matrix.arch }}
-        path: ${{ steps.build.outputs.dir }}
+        path: ${{ steps.build.outputs.dist }}
         if-no-files-found: error
 
