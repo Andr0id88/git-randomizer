@@ -203,7 +203,9 @@ Because the world has enough boring commit messages —
 and not nearly enough that say things like:
 
 > “I didn’t do it! It was the function’s fault! MUUUUM!”
-> — *Eric Cartman, mid-debug meltdown*
+>
+> - *Eric Cartman, mid-debug meltdown*
+
 
 ---
 
@@ -213,7 +215,7 @@ and not nearly enough that say things like:
 - Because you’ve always wanted to `git blame` a bug on **Ricky from Trailer Park Boys**.
 - Because every repo deserves a branch named `feature/screw-you-guys-im-going-home`.
 - Because you once typed `fix thing` and felt a part of you die inside.
-- And most important, reminds you that programming is supposed to be fun!
+- Because — most importantly — programming is supposed to be **fun**.
 
 ---
 
@@ -235,5 +237,5 @@ Use it. Abuse it. Confuse your team.
 Fill your repo with mystery, mayhem, and markdown-stained madness.
 
 Because someday, archaeologists will unearth your git history and whisper,
-“What the hell were they building?”
-**And that, my friend, is legacy.**
+> “What the hell were they building?”
+And that, my friend, is **legacy.**
