@@ -34,7 +34,7 @@ var Groups = map[string][]string{
 	},
 	"misc": {
 		"doge", "strong bad", "ace ventura", "monty python narrator",
-		"ivar aasen", // special case stays
+		"ivar aasen",
 	},
 }
 
