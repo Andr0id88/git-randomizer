@@ -2,7 +2,7 @@ name: Publish Release
 
 on:
   push:
-    tags: ["v*.*.*"]          # e.g. v1.2.3
+    tags: ["v*.*.*"]
 
 permissions:
   contents: write
@@ -37,7 +37,7 @@ jobs:
     - uses: actions/setup-go@v5
       with: { go-version: "1.22" }
 
-    # -------- per-arch cache (absolute path!) --------
+    # -------- per-arch absolute cache --------
     - name: Cache Go
       uses: actions/cache@v3
       with:
@@ -57,10 +57,10 @@ jobs:
       run: |
         set -euo pipefail
 
-        CACHE_ROOT="${GITHUB_WORKSPACE}/.gitr-cache/${GOOS}-${GOARCH}"
-        export GOMODCACHE="${CACHE_ROOT}/gomod"
-        export GOCACHE="${CACHE_ROOT}/gocache"
-        mkdir -p "$GOMODCACHE" "$GOCACHE"
+        CACHE_BASE="${GITHUB_WORKSPACE}/.gitr-cache/${GOOS}-${GOARCH}"
+        mkdir -p "$CACHE_BASE/gomod" "$CACHE_BASE/gocache"
+        export GOMODCACHE="$CACHE_BASE/gomod"
+        export GOCACHE="$CACHE_BASE/gocache"
 
         EXT=""
         if [ "$GOOS" = "windows" ]; then EXT=".exe"; fi
@@ -70,9 +70,9 @@ jobs:
         go build -v -o "dist/$BIN" .
         ( cd dist && sha256sum "$BIN" >> checksums.txt )
 
-        echo "asset=dist/$BIN"       >> "$GITHUB_OUTPUT"
-        echo "ck=dist/checksums.txt" >> "$GITHUB_OUTPUT"
+        echo "asset=dist/$BIN" >> "$GITHUB_OUTPUT"
 
+    # -------- upload binary --------
     - name: Upload binary
       uses: softprops/action-gh-release@v2
       with:
@@ -80,7 +80,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # -------- merge checksums once --------
+  # -------- merge checksums --------
   checksums:
     needs: release
     runs-on: ubuntu-latest
