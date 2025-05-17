@@ -229,6 +229,17 @@ gitr commit --list-groups        # group listed too
 
 ## 🤔 Why does this exist?
 
+Because the world has enough boring commit messages -
+and not nearly enough that say things like:
+
+> “After three hours of debugging, I realized the bug was me all along.”
+>
+> - Sir Galahad, softly weeping into main.py
+
+---
+
+### So really... why?
+
 - Because `git log` should read like the **diary of a caffeinated raccoon**.
 - Because you’ve always wanted to `git blame` a bug on **Ricky from Trailer Park Boys**.
 - Because every repo deserves a branch named `feature/screw-you-guys-im-going-home`.
