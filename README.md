@@ -10,20 +10,20 @@ When you could inscribe your legacy into the `git log` like:
 
 > “Ye olde letter-polish hath been administered, verily!”
 >
-> — *Shakespeare, probably*
+> - *Shakespeare, probably*
 
 ---
 
 > “Why say ‘Update README’ when you can say
-> ‘Many people are saying this documentation is the best — tremendous words, the best words!’”
+> ‘Many people are saying this documentation is the best - tremendous words, the best words!’”
 >
-> — *Trump, definitely*
+> - *Trump, definitely*
 
 ---
 
 > “Screw you guys, I’m rebasing at home.”
 >
-> — *Eric Cartman, 2 seconds before force-pushing to `main`*
+> - *Eric Cartman, 2 seconds before force-pushing to `main`*
 
 ---
 
