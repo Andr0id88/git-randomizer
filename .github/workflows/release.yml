@@ -41,10 +41,11 @@ jobs:
     - uses: actions/checkout@v4
       with: { fetch-depth: 0 } # Fetch all history for versioning tools if any
 
-    - uses: actions/setup-go@v5
+    - name: Set up Go
+      uses: actions/setup-go@v5
       with:
-        go-version: "1.22"
-        cache: false # Disable setup-go's built-in cache, we use actions/cache explicitly
+        go-version-file: 'go.mod'
+        cache: false
 
     - name: Cache Go Modules and Build Cache
       uses: actions/cache@v4
