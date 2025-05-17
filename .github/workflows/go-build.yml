@@ -31,48 +31,45 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: "1.24.1"
+        go-version: "1.22"
 
     # cache unique per OS/arch
     - name: Cache modules
       uses: actions/cache@v3
       with:
         path: |
-          ~/go/pkg/mod/${{ matrix.goos }}-${{ matrix.arch }}
-          ~/.cache/go-build/${{ matrix.goos }}-${{ matrix.arch }}
-        key: go-${{ matrix.goos }}-${{ matrix.arch }}-${{ hashFiles('**/go.sum') }}
+          ~/go/pkg/mod
+          ~/.cache/go-build
+        key: go-${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
-          go-${{ matrix.goos }}-${{ matrix.arch }}-
+          go-${{ runner.os }}-${{ matrix.arch }}-
 
     - name: Vet & Test
       run: |
         go vet ./...
-        go test ./... || true   # delete '|| true' once you add tests
+        go test ./... || true   # remove '|| true' once you add tests
 
-    # -------- compile binary (constant name) --------
+    # -------- compile binary (no zip!) --------
     - name: Build (${{ matrix.goos }}-${{ matrix.arch }})
       id: build
       env:
         GOOS: ${{ matrix.goos }}
         GOARCH: ${{ matrix.arch }}
         CGO_ENABLED: 0
-        GOMODCACHE: ~/go/pkg/mod/${{ matrix.goos }}-${{ matrix.arch }}
-        GOCACHE:    ~/.cache/go-build/${{ matrix.goos }}-${{ matrix.arch }}
       run: |
         set -euo pipefail
         EXT=""
-        if [ "$GOOS" = "windows" ]; then EXT=".exe"; fi
-        go build -v -o gitr${EXT} .
-        mkdir -p dist/${GOOS}-${GOARCH}
-        mv gitr${EXT} dist/${GOOS}-${GOARCH}/gitr${EXT}
-        echo "dir=dist/${GOOS}-${GOARCH}" >> $GITHUB_OUTPUT
+        if [ "${GOOS}" = "windows" ]; then EXT=".exe"; fi
+        OUT="gitr-${GOOS}-${GOARCH}${EXT}"
+        go build -v -o "$OUT" .
+        echo "out=$OUT" >> "$GITHUB_OUTPUT"
 
-    # -------- upload folder; action creates single zip --------
+    # -------- upload binary; artifact action adds the single zip --------
     - name: Upload artifact
       if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: gitr-${{ matrix.goos }}-${{ matrix.arch }}
-        path: ${{ steps.build.outputs.dir }}
+        name: ${{ steps.build.outputs.out }}   # artifact name
+        path: ${{ steps.build.outputs.out }}   # binary file
         if-no-files-found: error
 
