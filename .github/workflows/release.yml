@@ -1,0 +1,94 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"        # e.g. v1.3.0 or v0.9.2
+
+permissions:
+  contents: write       # needed for releases
+  id-token: write       # future-proof (sigstore, etc.)
+
+concurrency:
+  group: release        # prevent two releases running at once
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            arch: amd64
+          - goos: linux
+            arch: arm64
+          - goos: darwin
+            arch: amd64
+          - goos: darwin
+            arch: arm64
+          - goos: windows
+            arch: amd64
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+      with: { fetch-depth: 0 }   # needed for accurate changelog
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with: { go-version: "1.22" }
+
+    # reuse the same cache layout as your build workflow
+    - name: Cache Go
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ env.HOME }}/.cache/gitr/${{ matrix.goos }}-${{ matrix.arch }}
+        key: release-${{ matrix.goos }}-${{ matrix.arch }}-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          release-${{ matrix.goos }}-${{ matrix.arch }}-
+
+    # ------- build binary -------
+    - name: Build (${{ matrix.goos }}-${{ matrix.arch }})
+      env:
+        GOOS:   ${{ matrix.goos }}
+        GOARCH: ${{ matrix.arch }}
+        CGO_ENABLED: 0
+        GOMODCACHE: ${{ env.HOME }}/.cache/gitr/${{ matrix.goos }}-${{ matrix.arch }}/gomod
+        GOCACHE:    ${{ env.HOME }}/.cache/gitr/${{ matrix.goos }}-${{ matrix.arch }}/gocache
+      run: |
+        set -euo pipefail
+        EXT=""
+        if [ "$GOOS" = "windows" ]; then EXT=".exe"; fi
+        mkdir -p dist
+        go build -v -o "dist/gitr${EXT}" .
+        ( cd dist && sha256sum "gitr${EXT}" >> checksums.txt )
+
+    # ------- upload asset to the release draft -------
+    - name: Upload binary
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          dist/gitr${{ matrix.goos == 'windows' && '.exe' || '' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # last job uploads the shared checksums file once
+  checksums:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v4
+      with: { path: all }
+    - name: Merge checksums
+      run: |
+        cat all/**/checksums.txt > checksums.txt
+    - name: Upload checksums
+      uses: softprops/action-gh-release@v2
+      with:
+        files: checksums.txt
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
