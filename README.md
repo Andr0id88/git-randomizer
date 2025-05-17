@@ -20,12 +20,6 @@ When you could inscribe your legacy into the `git log` like:
 
 ---
 
-> “Screw you guys, I’m rebasing at home.”
->
-> - *Eric Cartman, 2 seconds before force-pushing to `main`*
-
----
-
 Your `git log` should feel like a **cursed scroll** -
 etched in arcane symbols, whispered about in hushed tones by future interns.
 
@@ -37,7 +31,7 @@ Let the chaos compile.**
 
 ---
 
-## 🌀 About
+### 🌀 What is this?
 
 `gitr` rewrites your **commit messages** and **branch names** in the voice of whoever (or *whatever*) you fancy:
 Yoda, Michael Jackson, Deadpool, Jim Lahey, Gandalf, Doge, your local weatherman… you name it.
@@ -232,6 +226,14 @@ gitr commit --list-groups        # group listed too
 Because the world has enough boring commit messages -
 and not nearly enough that say things like:
 
+---
+
+> “Screw you guys, I’m rebasing at home.”
+>
+> - *Eric Cartman, 2 seconds before force-pushing to `main`*
+
+---
+
 > “After three hours of debugging, I realized the bug was me all along.”
 >
 > - Sir Galahad, softly weeping into main.py
@@ -244,7 +246,7 @@ and not nearly enough that say things like:
 - Because you’ve always wanted to `git blame` a bug on **Ricky from Trailer Park Boys**.
 - Because every repo deserves a branch named `feature/screw-you-guys-im-going-home`.
 - Because you once typed `fix thing` and felt a part of you die inside.
-- Because - most importantly - programming is supposed to be **fun**.
+- Most importantly, because programming is supposed to be **fun.**
 
 ---
 
