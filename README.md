@@ -4,6 +4,8 @@
 > ‘Ye olde letter-polish hath been administered, verily!’”
 > - *Shakespeare, probably*
 
+---
+
 > “Why say ‘Update README’ when you can say
 > ‘Many people are saying this documentation is the best-tremendous words, the best words!’”
 > - *Trump, definitely*
