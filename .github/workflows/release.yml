@@ -5,11 +5,12 @@ on:
     tags: ["v*.*.*"]
 
 permissions:
-  contents: write
+  contents: write # Needed to create releases and upload assets
+  # id-token: write # Only if you use OIDC for other purposes, not strictly needed for softprops with GITHUB_TOKEN
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: false # For releases, usually false is better
 
 jobs:
   build:
@@ -30,87 +31,62 @@ jobs:
     outputs:
       goos: ${{ matrix.goos }}
       arch: ${{ matrix.arch }}
-
-    # Define GOMODCACHE and GOCACHE paths directly using github.workspace
-    # These will be unique per matrix job due to matrix vars in the path
     env:
-      MATRIX_GOMODCACHE: ${{ github.workspace }}/.cache/go-mod-${{ matrix.goos }}-${{ matrix.arch }}
-      MATRIX_GOCACHE: ${{ github.workspace }}/.cache/go-build-${{ matrix.goos }}-${{ matrix.arch }}
+      # Define GOMODCACHE and GOCACHE at the job level for consistency
+      # These will be unique per matrix job due to matrix vars in the path
+      GOMODCACHE_DIR: ${{ github.workspace }}/.cache/go-mod-${{ matrix.goos }}-${{ matrix.arch }}
+      GOCACHE_DIR: ${{ github.workspace }}/.cache/go-build-${{ matrix.goos }}-${{ matrix.arch }}
 
     steps:
     - uses: actions/checkout@v4
-      with: { fetch-depth: 0 }
+      with: { fetch-depth: 0 } # Fetch all history for versioning tools if any
 
     - uses: actions/setup-go@v5
       with:
         go-version: "1.22"
-        cache: false # Explicitly disable setup-go's built-in cache
+        cache: false # Disable setup-go's built-in cache, we use actions/cache explicitly
 
     - name: Cache Go Modules and Build Cache
       uses: actions/cache@v4
       with:
         path: |
-          ${{ env.MATRIX_GOMODCACHE }}
-          ${{ env.MATRIX_GOCACHE }}
+          ${{ env.GOMODCACHE_DIR }}
+          ${{ env.GOCACHE_DIR }}
         key: go-${{ runner.os }}-${{ matrix.goos }}-${{ matrix.arch }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           go-${{ runner.os }}-${{ matrix.goos }}-${{ matrix.arch }}-
 
     - name: Build (${{ matrix.goos }}-${{ matrix.arch }})
-      id: build_step
-      # Pass the explicitly defined cache paths to the go build environment
+      id: build_step # Renamed id for clarity
       env:
         GOOS: ${{ matrix.goos }}
         GOARCH: ${{ matrix.arch }}
         CGO_ENABLED: 0
-        GOMODCACHE: ${{ env.MATRIX_GOMODCACHE }}
-        GOCACHE: ${{ env.MATRIX_GOCACHE }}
+        # GOMODCACHE and GOCACHE need to be set for the go command itself
+        # These are inherited from the job-level env, but explicitly setting them here for Go process
+        GOMODCACHE: ${{ env.GOMODCACHE_DIR }}
+        GOCACHE: ${{ env.GOCACHE_DIR }}
       run: |
         set -euo pipefail
 
-        echo "--- DEBUG INFORMATION ---"
-        echo "Runner OS: ${{ runner.os }}"
-        echo "matrix.goos: ${{ matrix.goos }}"
-        echo "matrix.arch: ${{ matrix.arch }}"
-        echo "HOME (shell): $HOME"
-        echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-        echo "env.HOME (action context): ${{ env.HOME }}" # Check what Actions expression thinks HOME is
-
-        echo "MATRIX_GOMODCACHE (job env): ${{ env.MATRIX_GOMODCACHE }}"
-        echo "MATRIX_GOCACHE (job env): ${{ env.MATRIX_GOCACHE }}"
-
-        echo "GOMODCACHE (for go build): $GOMODCACHE"
-        echo "GOCACHE (for go build): $GOCACHE"
-
-        echo "Initial 'go env' output:"
-        go env
-        echo "Specifically GOCACHE reported by 'go env GOCACHE': $(go env GOCACHE)"
-        echo "Specifically GOMODCACHE reported by 'go env GOMODCACHE': $(go env GOMODCACHE)"
-        echo "--- END DEBUG INFORMATION ---"
-
-        # Ensure cache directories exist using the shell variables
-        echo "Creating directories if they don't exist:"
-        echo "mkdir -p \"$GOMODCACHE\""
-        mkdir -p "$GOMODCACHE"
-        echo "mkdir -p \"$GOCACHE\""
-        mkdir -p "$GOCACHE"
-
-        echo "Listing $GOMODCACHE parent:"
-        ls -ld "$(dirname "$GOMODCACHE")" || echo "Cannot list parent of GOMODCACHE"
-        echo "Listing $GOCACHE parent:"
-        ls -ld "$(dirname "$GOCACHE")" || echo "Cannot list parent of GOCACHE"
-
+        # Ensure cache directories exist (actions/cache might create them on restore, but good to be sure)
+        mkdir -p "$GOMODCACHE" "$GOCACHE"
 
         EXT=""
         if [ "$GOOS" = "windows" ]; then EXT=".exe"; fi
-        PROJECT_NAME="gitr" # Replace 'gitr' with your actual project name if different
+        # Use a more descriptive binary name including OS and ARCH
+        # Replace 'gitr' with your actual project name if different
+        PROJECT_NAME="gitr"
         BIN_FILENAME="${PROJECT_NAME}-${GOOS}-${GOARCH}${EXT}"
         CHECKSUM_FILENAME="${BIN_FILENAME}.sha256"
-        ARTIFACT_NAME="build-${GOOS}-${GOARCH}"
+        ARTIFACT_NAME="build-${GOOS}-${GOARCH}" # Used for artifact upload
 
-        mkdir -p dist # Create dist directory for outputs
+        mkdir -p dist
 
-        echo "Building for $GOOS/$GOARCH into dist/$BIN_FILENAME..."
+        echo "Building for $GOOS/$GOARCH..."
+        echo "GOMODCACHE is $GOMODCACHE"
+        echo "GOCACHE is $GOCACHE"
+
         go build -v -ldflags="-s -w" -o "dist/$BIN_FILENAME" .
 
         echo "Generating checksum for dist/$BIN_FILENAME..."
@@ -133,46 +109,67 @@ jobs:
         path: |
           ${{ steps.build_step.outputs.bin_path }}
           ${{ steps.build_step.outputs.checksum_path }}
-        retention-days: 1
+        retention-days: 1 # Keep artifacts for a short period
 
   publish:
     needs: build
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # Required to create a release
     steps:
     - name: Download all build artifacts
       uses: actions/download-artifact@v4
       with:
-        path: artifacts/
+        path: artifacts/ # Download all artifacts into subdirectories here
 
     - name: Prepare Release Assets
       id: prep_assets
       run: |
         set -euo pipefail
-        mkdir -p release_assets
+        mkdir release_assets
         FINAL_CHECKSUM_FILE="checksums.txt"
 
+        echo "Looking for artifacts in artifacts/build-*/*"
+        # Artifacts are downloaded into artifacts/ARTIFACT_NAME/file
+        # ARTIFACT_NAME was build-${GOOS}-${GOARCH}
+
+        # Copy all binaries to release_assets
         find artifacts/build-*/* -type f ! -name '*.sha256' -exec cp {} release_assets/ \;
+
+        # Concatenate all individual .sha256 files into the final checksums.txt
+        echo "Generating final $FINAL_CHECKSUM_FILE..."
         find artifacts/build-*/* -type f -name '*.sha256' -print0 | sort -z | xargs -0 cat > "release_assets/$FINAL_CHECKSUM_FILE"
 
         echo "Files prepared in release_assets:"
-        ls -lR release_assets/
+        ls -l release_assets/
         echo "Contents of release_assets/$FINAL_CHECKSUM_FILE:"
         cat "release_assets/$FINAL_CHECKSUM_FILE"
 
-        echo "asset_path=release_assets/*" >> "$GITHUB_OUTPUT"
+        # Get a list of files for the release action (optional, can use glob)
+        ASSET_FILES=$(cd release_assets && ls -1 | paste -sd "," -)
+        echo "asset_list=${ASSET_FILES}" >> $GITHUB_OUTPUT
+        echo "asset_path=release_assets/*" >> $GITHUB_OUTPUT
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
+        # GITHUB_REF_NAME is the tag name, e.g., v1.0.0
+        # softprops/action-gh-release infers tag_name from github.ref by default
+        # tag_name: ${{ github.ref_name }}
         name: Release ${{ github.ref_name }}
         body: |
           Automated release for ${{ github.ref_name }}
           See attached assets.
-        draft: false
+        draft: false # Set to true to create a draft release
         prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
-        files: ${{ steps.prep_assets.outputs.asset_path }}
+        files: ${{ steps.prep_assets.outputs.asset_path }} # Use glob pattern
+        # For example:
+        # files: |
+        #   release_assets/gitr-linux-amd64
+        #   release_assets/gitr-linux-amd64.sha256
+        #   release_assets/checksums.txt
         fail_on_unmatched_files: true
+
+
