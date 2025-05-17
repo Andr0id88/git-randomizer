@@ -3,11 +3,11 @@ name: Publish Release
 on:
   push:
     tags:
-      - "v*.*.*"          # pushes like v1.2.3 trigger
+      - "v*.*.*"           # v1.2.3, v0.9.0, etc.
 
 permissions:
   contents: write
-  id-token: write        # future-proof
+  id-token: write
 
 concurrency:
   group: release
@@ -32,53 +32,50 @@ jobs:
             arch: amd64
 
     steps:
-    # 1. grab code at the tag
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0         # changelog needs history
+    - uses: actions/checkout@v4
+      with: { fetch-depth: 0 }
 
-    # 2. Go tool-chain
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: "1.22"
+    - uses: actions/setup-go@v5
+      with: { go-version: "1.22" }
 
-    # 3. per-arch cache
+    # ---------- cache ----------
     - name: Cache Go
       uses: actions/cache@v3
       with:
         path: |
-          ${HOME}/.cache/gitr/${{ matrix.goos }}-${{ matrix.arch }}
+          ${{ github.workspace }}/.cache/gitr/${{ matrix.goos }}-${{ matrix.arch }}
         key: release-${{ matrix.goos }}-${{ matrix.arch }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           release-${{ matrix.goos }}-${{ matrix.arch }}-
 
-    # 4. build
+    # ---------- build ----------
     - name: Build (${{ matrix.goos }}-${{ matrix.arch }})
       id: build
       env:
         GOOS:   ${{ matrix.goos }}
         GOARCH: ${{ matrix.arch }}
         CGO_ENABLED: 0
-        GOMODCACHE: ${HOME}/.cache/gitr/${{ matrix.goos }}-${{ matrix.arch }}/gomod
-        GOCACHE:    ${HOME}/.cache/gitr/${{ matrix.goos }}-${{ matrix.arch }}/gocache
       run: |
         set -euo pipefail
+
+        # absolute cache dirs (HOME always set on runner)
+        CACHE_BASE="$HOME/workspace/.cache/gitr/${GOOS}-${GOARCH}"
+        mkdir -p "$CACHE_BASE/gomod" "$CACHE_BASE/gocache"
+
+        export GOMODCACHE="$CACHE_BASE/gomod"
+        export GOCACHE="$CACHE_BASE/gocache"
+
         EXT=""
         if [ "$GOOS" = "windows" ]; then EXT=".exe"; fi
+        BIN="gitr${EXT}"
 
         mkdir -p dist
-        BIN="gitr${EXT}"
-        OUT="dist/$BIN"
-
-        go build -v -o "$OUT" .
+        go build -v -o "dist/$BIN" .
         ( cd dist && sha256sum "$BIN" >> checksums.txt )
 
-        echo "asset=$OUT"   >> "$GITHUB_OUTPUT"
-        echo "checksum=dist/checksums.txt" >> "$GITHUB_OUTPUT"
+        echo "asset=dist/$BIN" >> "$GITHUB_OUTPUT"
+        echo "ckfile=dist/checksums.txt" >> "$GITHUB_OUTPUT"
 
-    # 5. upload binary to the tag release
     - name: Upload binary
       uses: softprops/action-gh-release@v2
       with:
@@ -86,21 +83,18 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # ------------- merge checksums once all arch jobs finish -------------
+  # ---------- combine & upload checksums ----------
   checksums:
     needs: release
     runs-on: ubuntu-latest
     steps:
     - uses: actions/download-artifact@v4
-      with:
-        path: all
+      with: { path: all }
     - name: Merge checksums
-      run: |
-        cat all/**/checksums.txt > checksums.txt
+      run: cat all/**/checksums.txt > checksums.txt
     - name: Upload checksums
       uses: softprops/action-gh-release@v2
-      with:
-        files: checksums.txt
+      with: { files: checksums.txt }
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
