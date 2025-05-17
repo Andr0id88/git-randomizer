@@ -1,7 +1,7 @@
 name: Go Build Matrix
 
 on:
-  push:    { branches: [ "**" ] }
+  push:        { branches: [ "**" ] }
   pull_request: { branches: [ "**" ] }
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - goos: linux   # ← for WSL too
+          - goos: linux
             arch: amd64
           - goos: linux
             arch: arm64
@@ -23,13 +23,11 @@ jobs:
             arch: amd64
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
+    - uses: actions/setup-go@v5
       with:
-        go-version: "1.24.1"
+        go-version: "1.22"
 
     - name: Cache modules
       uses: actions/cache@v3
@@ -40,25 +38,37 @@ jobs:
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-go-
 
-    - name: Vet & test
+    # ---------- Vet & unit tests (host arch) ----------
+    - name: Vet & Test
       run: |
         go vet ./...
-        go test ./... || true   # remove '|| true' once you add tests
+        go test ./... || true     # delete '|| true' once you add tests
 
-    - name: Build ${{ matrix.goos }}-${{ matrix.arch }}
+    # ---------- Cross-compile & zip ----------
+    - name: Build gitr (${{ matrix.goos }}-${{ matrix.arch }})
+      id: build-binary
       env:
         GOOS:   ${{ matrix.goos }}
         GOARCH: ${{ matrix.arch }}
         CGO_ENABLED: 0
       run: |
-        suffix=""
-        if [ "${{ matrix.goos }}" = "windows" ]; then suffix=".exe"; fi
-        go build -v -o gitr${suffix} .
-        zip gitr-${{ matrix.goos }}-${{ matrix.arch }}.zip gitr${suffix}
+        set -euo pipefail
+        EXT=""
+        if [ "${GOOS}" = "windows" ]; then EXT=".exe"; fi
 
+        echo "🔧 building for $GOOS/$GOARCH"
+        go build -v -o gitr${EXT} .
+
+        ZIP_NAME="gitr-${GOOS}-${GOARCH}.zip"
+        zip -9 -q $ZIP_NAME gitr${EXT}
+        echo "zip_name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
+
+    # ---------- Upload only if build step succeeded ----------
     - name: Upload artifact
+      if: success()
       uses: actions/upload-artifact@v3
       with:
-        name: gitr-${{ matrix.goos }}-${{ matrix.arch }}
-        path: gitr-${{ matrix.goos }}-${{ matrix.arch }}.zip
+        name: ${{ steps.build-binary.outputs.zip_name }}
+        path: ${{ steps.build-binary.outputs.zip_name }}
+        if-no-files-found: error
 
