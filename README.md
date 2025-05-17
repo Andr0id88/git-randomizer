@@ -45,7 +45,7 @@ Yoda, Michael Jackson, Deadpool, Jim Lahey, Gandalf, Doge, your local weatherman
 Perfect for side projects, internal tooling, or simply annoying your teammates during code review.
 
 ⚠️ **SERIOUS WARNING**
-This tool is *satire*. If you push these messages to a production repo, your CI may pass —
+This tool is *satire*. If you push these messages to a production repo, your CI may pass -
 but HR might not. You’ve been warned.
 
 ---
@@ -245,7 +245,7 @@ and not nearly enough that say things like:
 - Because you’ve always wanted to `git blame` a bug on **Ricky from Trailer Park Boys**.
 - Because every repo deserves a branch named `feature/screw-you-guys-im-going-home`.
 - Because you once typed `fix thing` and felt a part of you die inside.
-- Because — most importantly — programming is supposed to be **fun**.
+- Because - most importantly - programming is supposed to be **fun**.
 
 ---
 
