@@ -37,11 +37,15 @@ but HR might not. You’ve been warned.
 
 ```bash
 # 1. clone and build
-git clone https://your-local-path/git-randomizer.git
+git clone https://Andr0id88/git-randomizer.git
 cd git-randomizer
 go mod tidy && go build -o ~/.local/bin/gitr .
 
-# 2. export (or store in pass) your Gemini API key
+# 2. Create your Gemini API key
+# Visit google ai studio and create an api key:
+# https://aistudio.google.com/apikey
+
+# 3. export (or store in pass) your Gemini API key
 export GEMINI_API_KEY=YOUR_KEY
 # optional:
 pass insert gemini_api_key   # then set pass_secret in YAML
