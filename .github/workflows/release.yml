@@ -1,3 +1,4 @@
+
 name: Publish Release
 
 on:
@@ -5,17 +6,16 @@ on:
     tags: ["v*.*.*"]
 
 permissions:
-  contents: write
-  id-token: write
+  contents: write # Needed to create releases and upload assets
+  # id-token: write # Only if you use OIDC for other purposes, not strictly needed for softprops with GITHUB_TOKEN
 
 concurrency:
-  group: release
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false # For releases, usually false is better
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         include:
@@ -29,69 +29,148 @@ jobs:
             arch: arm64
           - goos: windows
             arch: amd64
+    outputs:
+      goos: ${{ matrix.goos }}
+      arch: ${{ matrix.arch }}
+    env:
+      # Define GOMODCACHE and GOCACHE at the job level for consistency
+      # These will be unique per matrix job due to matrix vars in the path
+      GOMODCACHE_DIR: ${{ github.workspace }}/.cache/go-mod-${{ matrix.goos }}-${{ matrix.arch }}
+      GOCACHE_DIR: ${{ github.workspace }}/.cache/go-build-${{ matrix.goos }}-${{ matrix.arch }}
 
     steps:
     - uses: actions/checkout@v4
-      with: { fetch-depth: 0 }
+      with: { fetch-depth: 0 } # Fetch all history for versioning tools if any
 
     - uses: actions/setup-go@v5
-      with: { go-version: "1.22" }
+      with:
+        go-version: "1.22"
+        cache: false # Disable setup-go's built-in cache, we use actions/cache explicitly
 
-    # -------- per-arch absolute cache --------
-    - name: Cache Go
-      uses: actions/cache@v3
+    - name: Cache Go Modules and Build Cache
+      uses: actions/cache@v4
       with:
         path: |
-          ${{ github.workspace }}/.gitr-cache/${{ matrix.goos }}-${{ matrix.arch }}
-        key: rel-${{ matrix.goos }}-${{ matrix.arch }}-${{ hashFiles('**/go.sum') }}
+          ${{ env.GOMODCACHE_DIR }}
+          ${{ env.GOCACHE_DIR }}
+        key: go-${{ runner.os }}-${{ matrix.goos }}-${{ matrix.arch }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
-          rel-${{ matrix.goos }}-${{ matrix.arch }}-
+          go-${{ runner.os }}-${{ matrix.goos }}-${{ matrix.arch }}-
 
-    # -------- build --------
     - name: Build (${{ matrix.goos }}-${{ matrix.arch }})
-      id: build
+      id: build_step # Renamed id for clarity
       env:
-        GOOS:   ${{ matrix.goos }}
+        GOOS: ${{ matrix.goos }}
         GOARCH: ${{ matrix.arch }}
         CGO_ENABLED: 0
+        # GOMODCACHE and GOCACHE need to be set for the go command itself
+        # These are inherited from the job-level env, but explicitly setting them here for Go process
+        GOMODCACHE: ${{ env.GOMODCACHE_DIR }}
+        GOCACHE: ${{ env.GOCACHE_DIR }}
       run: |
         set -euo pipefail
 
-        CACHE_BASE="${GITHUB_WORKSPACE}/.gitr-cache/${GOOS}-${GOARCH}"
-        mkdir -p "$CACHE_BASE/gomod" "$CACHE_BASE/gocache"
-        export GOMODCACHE="$CACHE_BASE/gomod"
-        export GOCACHE="$CACHE_BASE/gocache"
+        # Ensure cache directories exist (actions/cache might create them on restore, but good to be sure)
+        mkdir -p "$GOMODCACHE" "$GOCACHE"
 
         EXT=""
         if [ "$GOOS" = "windows" ]; then EXT=".exe"; fi
-        BIN="gitr${EXT}"
+        # Use a more descriptive binary name including OS and ARCH
+        # Replace 'gitr' with your actual project name if different
+        PROJECT_NAME="gitr"
+        BIN_FILENAME="${PROJECT_NAME}-${GOOS}-${GOARCH}${EXT}"
+        CHECKSUM_FILENAME="${BIN_FILENAME}.sha256"
+        ARTIFACT_NAME="build-${GOOS}-${GOARCH}" # Used for artifact upload
 
         mkdir -p dist
-        go build -v -o "dist/$BIN" .
-        ( cd dist && sha256sum "$BIN" >> checksums.txt )
 
-        echo "asset=dist/$BIN" >> "$GITHUB_OUTPUT"
+        echo "Building for $GOOS/$GOARCH..."
+        echo "GOMODCACHE is $GOMODCACHE"
+        echo "GOCACHE is $GOCACHE"
 
-    # -------- upload binary --------
-    - name: Upload binary
-      uses: softprops/action-gh-release@v2
+        go build -v -ldflags="-s -w" -o "dist/$BIN_FILENAME" .
+
+        echo "Generating checksum for dist/$BIN_FILENAME..."
+        (cd dist && sha256sum "$BIN_FILENAME" > "$CHECKSUM_FILENAME")
+
+        echo "Binary path: dist/$BIN_FILENAME"
+        echo "Checksum path: dist/$CHECKSUM_FILENAME"
+        echo "Artifact name: $ARTIFACT_NAME"
+
+        echo "bin_path=dist/$BIN_FILENAME" >> "$GITHUB_OUTPUT"
+        echo "checksum_path=dist/$CHECKSUM_FILENAME" >> "$GITHUB_OUTPUT"
+        echo "artifact_upload_name=${ARTIFACT_NAME}" >> "$GITHUB_OUTPUT"
+        echo "bin_filename=${BIN_FILENAME}" >> "$GITHUB_OUTPUT"
+        echo "checksum_filename=${CHECKSUM_FILENAME}" >> "$GITHUB_OUTPUT"
+
+    - name: Upload Build Artifact (${{ matrix.goos }}-${{ matrix.arch }})
+      uses: actions/upload-artifact@v4
       with:
-        files: ${{ steps.build.outputs.asset }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        name: ${{ steps.build_step.outputs.artifact_upload_name }}
+        path: |
+          ${{ steps.build_step.outputs.bin_path }}
+          ${{ steps.build_step.outputs.checksum_path }}
+        retention-days: 1 # Keep artifacts for a short period
 
-  # -------- merge checksums --------
-  checksums:
-    needs: release
+  publish:
+    needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to create a release
     steps:
-    - uses: actions/download-artifact@v4
-      with: { path: all }
-    - name: Merge checksums
-      run: cat all/**/checksums.txt > checksums.txt
-    - name: Upload checksums
+    - name: Download all build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts/ # Download all artifacts into subdirectories here
+
+    - name: Prepare Release Assets
+      id: prep_assets
+      run: |
+        set -euo pipefail
+        mkdir release_assets
+        FINAL_CHECKSUM_FILE="checksums.txt"
+
+        echo "Looking for artifacts in artifacts/build-*/*"
+        # Artifacts are downloaded into artifacts/ARTIFACT_NAME/file
+        # ARTIFACT_NAME was build-${GOOS}-${GOARCH}
+
+        # Copy all binaries to release_assets
+        find artifacts/build-*/* -type f ! -name '*.sha256' -exec cp {} release_assets/ \;
+
+        # Concatenate all individual .sha256 files into the final checksums.txt
+        echo "Generating final $FINAL_CHECKSUM_FILE..."
+        find artifacts/build-*/* -type f -name '*.sha256' -print0 | sort -z | xargs -0 cat > "release_assets/$FINAL_CHECKSUM_FILE"
+
+        echo "Files prepared in release_assets:"
+        ls -l release_assets/
+        echo "Contents of release_assets/$FINAL_CHECKSUM_FILE:"
+        cat "release_assets/$FINAL_CHECKSUM_FILE"
+
+        # Get a list of files for the release action (optional, can use glob)
+        ASSET_FILES=$(cd release_assets && ls -1 | paste -sd "," -)
+        echo "asset_list=${ASSET_FILES}" >> $GITHUB_OUTPUT
+        echo "asset_path=release_assets/*" >> $GITHUB_OUTPUT
+
+    - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
-      with: { files: checksums.txt }
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        # GITHUB_REF_NAME is the tag name, e.g., v1.0.0
+        # softprops/action-gh-release infers tag_name from github.ref by default
+        # tag_name: ${{ github.ref_name }}
+        name: Release ${{ github.ref_name }}
+        body: |
+          Automated release for ${{ github.ref_name }}
+          See attached assets.
+        draft: false # Set to true to create a draft release
+        prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
+        files: ${{ steps.prep_assets.outputs.asset_path }} # Use glob pattern
+        # For example:
+        # files: |
+        #   release_assets/gitr-linux-amd64
+        #   release_assets/gitr-linux-amd64.sha256
+        #   release_assets/checksums.txt
+        fail_on_unmatched_files: true
+
 
