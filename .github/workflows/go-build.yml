@@ -38,38 +38,41 @@ jobs:
       uses: actions/cache@v3
       with:
         path: |
-          ~/go/pkg/mod
-          ~/.cache/go-build
-        key: go-${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('**/go.sum') }}
+          ~/go/pkg/mod/${{ matrix.goos }}-${{ matrix.arch }}
+          ~/.cache/go-build/${{ matrix.goos }}-${{ matrix.arch }}
+        key: go-${{ matrix.goos }}-${{ matrix.arch }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
-          go-${{ runner.os }}-${{ matrix.arch }}-
+          go-${{ matrix.goos }}-${{ matrix.arch }}-
 
     - name: Vet & Test
       run: |
         go vet ./...
-        go test ./... || true   # remove '|| true' once you add tests
+        go test ./... || true   # delete '|| true' once you add tests
 
-    # -------- compile binary (no zip!) --------
+    # -------- compile binary (constant name) --------
     - name: Build (${{ matrix.goos }}-${{ matrix.arch }})
       id: build
       env:
         GOOS: ${{ matrix.goos }}
         GOARCH: ${{ matrix.arch }}
         CGO_ENABLED: 0
+        GOMODCACHE: ~/go/pkg/mod/${{ matrix.goos }}-${{ matrix.arch }}
+        GOCACHE:    ~/.cache/go-build/${{ matrix.goos }}-${{ matrix.arch }}
       run: |
         set -euo pipefail
         EXT=""
-        if [ "${GOOS}" = "windows" ]; then EXT=".exe"; fi
-        OUT="gitr-${GOOS}-${GOARCH}${EXT}"
-        go build -v -o "$OUT" .
-        echo "out=$OUT" >> "$GITHUB_OUTPUT"
+        if [ "$GOOS" = "windows" ]; then EXT=".exe"; fi
+        go build -v -o gitr${EXT} .
+        mkdir -p dist/${GOOS}-${GOARCH}
+        mv gitr${EXT} dist/${GOOS}-${GOARCH}/gitr${EXT}
+        echo "dir=dist/${GOOS}-${GOARCH}" >> $GITHUB_OUTPUT
 
-    # -------- upload binary; artifact action adds the single zip --------
+    # -------- upload folder; action creates single zip --------
     - name: Upload artifact
       if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ steps.build.outputs.out }}   # artifact name
-        path: ${{ steps.build.outputs.out }}   # binary file
+        name: gitr-${{ matrix.goos }}-${{ matrix.arch }}
+        path: ${{ steps.build.outputs.dir }}
         if-no-files-found: error
 
