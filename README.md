@@ -14,7 +14,6 @@ When you could inscribe your legacy into the `git log` like:
 
 ---
 
-> “Why say ‘Update README’ when you can say
 > ‘Many people are saying this documentation is the best - tremendous words, the best words!’”
 >
 > - *Trump, definitely*
@@ -27,7 +26,7 @@ When you could inscribe your legacy into the `git log` like:
 
 ---
 
-Your `git log` should feel like a **cursed scroll** —
+Your `git log` should feel like a **cursed scroll** -
 etched in arcane symbols, whispered about in hushed tones by future interns.
 
 This isn’t just version control.
