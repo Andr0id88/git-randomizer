@@ -1,0 +1,64 @@
+name: Go Build Matrix
+
+on:
+  push:    { branches: [ "**" ] }
+  pull_request: { branches: [ "**" ] }
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - goos: linux   # ← for WSL too
+            arch: amd64
+          - goos: linux
+            arch: arm64
+          - goos: darwin
+            arch: amd64
+          - goos: darwin
+            arch: arm64
+          - goos: windows
+            arch: amd64
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: "1.24.1"
+
+    - name: Cache modules
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/go/pkg/mod
+          ~/.cache/go-build
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-go-
+
+    - name: Vet & test
+      run: |
+        go vet ./...
+        go test ./... || true   # remove '|| true' once you add tests
+
+    - name: Build ${{ matrix.goos }}-${{ matrix.arch }}
+      env:
+        GOOS:   ${{ matrix.goos }}
+        GOARCH: ${{ matrix.arch }}
+        CGO_ENABLED: 0
+      run: |
+        suffix=""
+        if [ "${{ matrix.goos }}" = "windows" ]; then suffix=".exe"; fi
+        go build -v -o gitr${suffix} .
+        zip gitr-${{ matrix.goos }}-${{ matrix.arch }}.zip gitr${suffix}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: gitr-${{ matrix.goos }}-${{ matrix.arch }}
+        path: gitr-${{ matrix.goos }}-${{ matrix.arch }}.zip
+
