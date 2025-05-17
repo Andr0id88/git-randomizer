@@ -2,11 +2,11 @@
 
 > “Why say ‘Fix typo’ when you can say
 > ‘Ye olde letter-polish hath been administered, verily!’”
-> — *Shakespeare, probably*
+> - *Shakespeare, probably*
 
 > “Why say ‘Update README’ when you can say
-> ‘Many people are saying this documentation is the best—tremendous words, the best words!’”
-> — *Trump, definitely*
+> ‘Many people are saying this documentation is the best-tremendous words, the best words!’”
+> - *Trump, definitely*
 
 gitr rewrites your **commit messages** and **branch names** in the voice of whoever (or whatever) you fancy:
 Yoda, Deadpool, Jim Lahey, Gandalf, Doge, your local weatherman… you name it.
