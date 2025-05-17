@@ -110,7 +110,7 @@ gitr branch -g cartoons -r
 
 ---
 
-# 💻 CLI cheat-sheet
+## 💻 CLI cheat-sheet
 ```bash
 gitr commit --help   # full list
 
@@ -131,7 +131,7 @@ gitr branch [...]   # same vibe, plus:
 
 ---
 
-# 📝 Configuration file
+## 📝 Configuration file
 
 The first run creates:
 
@@ -197,7 +197,7 @@ gitr commit --list-groups        # group listed too
 
 ---
 
-# 🤔 Why does this exist?
+## 🤔 Why does this exist?
 
 Because git history is for humans (and occasionally raccoons).
 A touch of humor:
