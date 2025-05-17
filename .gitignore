@@ -1,0 +1,10 @@
+# editor junk
+*.swp
+*.swo
+.DS_Store
+
+# build output
+/bin/
+
+# todo-list for the project
+todo.md
