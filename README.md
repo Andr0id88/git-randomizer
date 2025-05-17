@@ -199,12 +199,41 @@ gitr commit --list-groups        # group listed too
 
 ## 🤔 Why does this exist?
 
-Because git history is for humans (and occasionally raccoons).
-A touch of humor:
-* Breaks the monotony of “Refactor util” commits,
-* Sparks joy in code review,
-* And most important, reminds you that programming is supposed to be fun.
+Because the world has enough boring commit messages —
+and not nearly enough that say things like:
 
-If your corporate guidelines demand “conventional commits,” run gitr on a personal fork, chuckle, then cherry-pick a sensible message upstream. Everybody wins.
+> “I didn’t do it! It was the function’s fault! MUUUUM!”
+> — *Eric Cartman, mid-debug meltdown*
 
-**Have fun — and may your git log read like the wildest cross-over episode never aired.**
+---
+
+### So really... why?
+
+- Because `git log` should read like the **diary of a caffeinated raccoon**.
+- Because you’ve always wanted to `git blame` a bug on **Ricky from Trailer Park Boys**.
+- Because every repo deserves a branch named `feature/screw-you-guys-im-going-home`.
+- Because you once typed `fix thing` and felt a part of you die inside.
+- And most important, reminds you that programming is supposed to be fun!
+
+---
+
+Yes, you *could* follow conventional commit standards…
+But wouldn’t you rather write:
+
+```bash
+gitr commit -s "cartman"
+# → fix: Changed stuff. Respect my authoritah.
+```
+
+If your corporate guidelines demand “conventional commits,”
+go full goblin in a personal fork, laugh, then cherry-pick a respectable message upstream.
+**Professional on the outside, feral on the inside.**
+
+---
+
+Use it. Abuse it. Confuse your team.
+Fill your repo with mystery, mayhem, and markdown-stained madness.
+
+Because someday, archaeologists will unearth your git history and whisper,
+“What the hell were they building?”
+**And that, my friend, is legacy.**
