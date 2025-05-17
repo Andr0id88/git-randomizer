@@ -18,7 +18,7 @@ but HR might not. You’ve been warned.
 
 ---
 
-## Features
+## ✨ Features
 
 | Area | What it does |
 |------|--------------|
@@ -33,7 +33,7 @@ but HR might not. You’ve been warned.
 
 ---
 
-## Quick start
+## 🚀 Quick start
 
 
 > ⚠️ **Note:** A Google Gemini API key is required to use `git-randomizer`, regardless of how it's installed.
@@ -108,7 +108,7 @@ gitr branch -g cartoons -r
 
 ---
 
-# CLI cheat-sheet
+# 💻 CLI cheat-sheet
 ```bash
 gitr commit --help   # full list
 
@@ -129,29 +129,41 @@ gitr branch [...]   # same vibe, plus:
 
 ---
 
-# Configuration file
+# 📝 Configuration file
 
 The first run creates:
 
 ```bash
-# ~/.config/git-randomizer/git-randomizer.yaml
-default_character: random        # or "homer simpson"
-default_group: ""                # e.g. "cartoons"
-default_mood: playful            # or "random"
-default_length: medium
-confirm: true                    # ask before commit
-pass_secret: gemini_api_key      # path in pass
+# ------------------------------------------------------------
+# git-randomizer configuration -- every CLI flag has a YAML twin.
+# Anything here is overridden by command-line flags at runtime.
+# Set a value to 'random' to enable randomisation.
+# ------------------------------------------------------------
+
+# --- Commit defaults ----------------------------------------
+default_character: random   # persona, e.g. "yoda" or "donald trump"
+default_group: ""           # e.g. "cartoons" – random within group
+default_mood: playful       # 'playful', 'sarcastic', or 'random'
+default_length: medium      # short | medium | long
+confirm: true               # true = ask before committing
+
+# --- API key storage ----------------------------------------
+pass_secret: "gemini_api_key"   # path in 'pass' – overrides GEMINI_API_KEY
+
+# --- Success tagline ----------------------------------------
 tagline_enabled: true
-tagline_persona: yoda
-branch_persona: random
-branch_persona_group: ""
+tagline_persona: yoda           # persona for the one-liner after commit
+
+# --- Branch-name generator ----------------------------------
+branch_persona: random          # fixed persona OR 'random'
+branch_persona_group: ""        # e.g. "trailer_park_boys"
 ```
 
 *Change a value or set it to random to enable randomness.*
 
 ---
 
-# Adding your own personas 🎭
+# 🎭 Adding your own personas
 
 1. Edit internal/styles/styles.go
 ```bash
@@ -183,7 +195,7 @@ gitr commit --list-groups        # group listed too
 
 ---
 
-# Why does this exist?
+# 🤔 Why does this exist?
 
 Because git history is for humans (and occasionally raccoons).
 A touch of humor:
