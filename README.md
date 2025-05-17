@@ -251,12 +251,7 @@ and not nearly enough that say things like:
 ---
 
 Yes, you *could* follow conventional commit standards…
-But wouldn’t you rather write:
-
-```bash
-gitr commit -s "cartman"
-# → fix: Changed stuff. Respect my authoritah.
-```
+But wouldn’t you rather write something with a little more ✨ chaos?
 
 If your corporate guidelines demand “conventional commits,”
 go full goblin in a personal fork, laugh, then cherry-pick a respectable message upstream.
