@@ -13,11 +13,16 @@ jobs:
     strategy:
       matrix:
         include:
-          - goos: linux   arch: amd64
-          - goos: linux   arch: arm64
-          - goos: darwin  arch: amd64
-          - goos: darwin  arch: arm64
-          - goos: windows arch: amd64
+          - goos: linux
+            arch: amd64
+          - goos: linux
+            arch: arm64
+          - goos: darwin
+            arch: amd64
+          - goos: darwin
+            arch: arm64
+          - goos: windows
+            arch: amd64
 
     steps:
     - name: Checkout
