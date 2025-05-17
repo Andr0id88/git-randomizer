@@ -165,7 +165,7 @@ branch_persona_group: ""        # e.g. "trailer_park_boys"
 
 ---
 
-# 🎭 Adding your own personas
+## 🎭 Adding your own personas
 
 1. Edit internal/styles/styles.go
 ```bash
