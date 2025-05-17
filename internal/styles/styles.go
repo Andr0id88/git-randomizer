@@ -23,7 +23,7 @@ var Groups = map[string][]string{
 		"stewie griffin", "kermit the frog", "gollum", "glados",
 	},
 	"politicians": {
-		"donald trump", "barack obama", "bernie sanders",
+		"donald trump", "barack obama", "bernie sanders", "kim jong-un",
 	},
 	"celebrities": {
 		"elon musk", "morgan freeman", "keanu reeves", "ron burgundy",
