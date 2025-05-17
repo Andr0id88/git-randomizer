@@ -33,7 +33,7 @@ var Groups = map[string][]string{
 		"shakespeare", "gandalf", "mark twain",
 	},
 	"misc": {
-		"doge", "strong bad", "ace ventura", "monty python narrator",
+		"doge", "strong bad", "ace ventura", "monty python narrator", "pickle rick",
 		"ivar aasen",
 	},
 }
