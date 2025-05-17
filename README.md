@@ -128,7 +128,7 @@ gitr --help
 #### 🧪 Step 4: Try It Out!
 ```bash
 cd ~/code/my-project
-gitr commit -s "deadpool"
+gitr commit -s "Donald Trump"
 gitr branch -g cartoons -r
 ```
 
@@ -182,7 +182,7 @@ tagline_persona: yoda           # persona for the one-liner after commit
 
 # --- Branch-name generator ----------------------------------
 branch_persona: random          # fixed persona OR 'random'
-branch_persona_group: ""        # e.g. "trailer_park_boys"
+branch_persona_group: ""        # e.g. "supervillains"
 ```
 
 *Change a value or set it to random to enable randomness.*
@@ -195,9 +195,9 @@ branch_persona_group: ""        # e.g. "trailer_park_boys"
 ```bash
 var Groups = map[string][]string{
     "my_buddies": {
+        "grandma in caps lock",
         "steve the intern",
         "maria the barista",
-        "grandma in caps lock",
     },
     // existing groups...
 }
