@@ -2,12 +2,14 @@
 
 > “Why say ‘Fix typo’ when you can say
 > ‘Ye olde letter-polish hath been administered, verily!’”
+>
 > - *Shakespeare, probably*
 
 ---
 
 > “Why say ‘Update README’ when you can say
 > ‘Many people are saying this documentation is the best-tremendous words, the best words!’”
+>
 > - *Trump, definitely*
 
 gitr rewrites your **commit messages** and **branch names** in the voice of whoever (or whatever) you fancy:
@@ -238,4 +240,5 @@ Fill your repo with mystery, mayhem, and markdown-stained madness.
 
 Because someday, archaeologists will unearth your git history and whisper,
 > “What the hell were they building?”
+
 And that, my friend, is **legacy.**
