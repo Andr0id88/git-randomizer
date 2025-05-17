@@ -57,7 +57,7 @@ func initConfig() {
 			fmt.Printf("config error: %v\n", err)
 		} else {
 			fmt.Printf("📝 Created default config at %s\n", cfgFile)
-			_ = viper.ReadInConfig() // read the file we just wrote
+			_ = viper.ReadInConfig()
 		}
 	}
 }
