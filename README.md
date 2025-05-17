@@ -35,6 +35,9 @@ but HR might not. You’ve been warned.
 
 ## Quick start
 
+TODO
+Add release link
+
 ```bash
 # 1. clone and build
 git clone https://Andr0id88/git-randomizer.git
