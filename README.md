@@ -1,23 +1,52 @@
 # gitr ― the **Git Randomizer**
 
-> “Why say ‘Fix typo’ when you can say
-> ‘Ye olde letter-polish hath been administered, verily!’”
+Why settle for:
+
+> `fix: typo`
+
+When you could inscribe your legacy into the `git log` like:
+
+---
+
+> “Ye olde letter-polish hath been administered, verily!”
 >
-> - *Shakespeare, probably*
+> — *Shakespeare, probably*
 
 ---
 
 > “Why say ‘Update README’ when you can say
-> ‘Many people are saying this documentation is the best-tremendous words, the best words!’”
+> ‘Many people are saying this documentation is the best — tremendous words, the best words!’”
 >
-> - *Trump, definitely*
+> — *Trump, definitely*
 
-gitr rewrites your **commit messages** and **branch names** in the voice of whoever (or whatever) you fancy:
-Yoda, Deadpool, Jim Lahey, Gandalf, Doge, your local weatherman… you name it.
+---
+
+> “Screw you guys, I’m rebasing at home.”
+>
+> — *Eric Cartman, 2 seconds before force-pushing to `main`*
+
+---
+
+Your `git log` should feel like a **cursed scroll** —
+etched in arcane symbols, whispered about in hushed tones by future interns.
+
+This isn’t just version control.
+It’s a **ritual**, a **rebellion**, a **beautiful mistake** waiting to be discovered.
+
+**Write weird. Commit louder.
+Let the chaos compile.**
+
+---
+
+## 🌀 About
+
+`gitr` rewrites your **commit messages** and **branch names** in the voice of whoever (or *whatever*) you fancy:
+Yoda, Michael Jackson, Deadpool, Jim Lahey, Gandalf, Doge, your local weatherman… you name it.
+
 Perfect for side projects, internal tooling, or simply annoying your teammates during code review.
 
 ⚠️ **SERIOUS WARNING**
-This tool is **satire**. If you push these messages to a production repo your CI may pass,
+This tool is *satire*. If you push these messages to a production repo, your CI may pass —
 but HR might not. You’ve been warned.
 
 ---
