@@ -265,3 +265,31 @@ Because someday, archaeologists will unearth your git history and whisper,
 > “What the hell were they building?”
 
 And that, my friend, is **legacy.**
+
+---
+
+🤝 Contributing (Optional)
+
+Contributions are welcome! If you have ideas for improvements or find a bug, please feel free to:
+
+1. Fork the repository.
+2. Clone your fork to your local machine:
+```bash
+git clone https://github.com/andr0id88/git-randomizer.git
+```
+3. Create a new feature branch:
+```bash
+git checkout -b feature/AmazingFeature
+```
+4. Make your changes.
+5. Commit and push your changes:
+```bash
+git commit -m 'Add some AmazingFeature'
+git push origin feature/AmazingFeature
+```
+6. Open a Pull Request.
+
+---
+
+📄 License
+This project is licensed under the [MIT License](https://github.com/Andr0id88/git-randomizer/blob/main/LICENSE)
