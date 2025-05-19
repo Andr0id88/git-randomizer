@@ -268,14 +268,14 @@ And that, my friend, is **legacy.**
 
 ---
 
-🤝 Contributing (Optional)
+## 🤝 Contributing (Optional)
 
 Contributions are welcome! If you have ideas for improvements or find a bug, please feel free to:
 
 1. Fork the repository.
 2. Clone your fork to your local machine:
 ```bash
-git clone https://github.com/andr0id88/git-randomizer.git
+git clone https://github.com/Andr0id88/git-randomizer.git
 ```
 3. Create a new feature branch:
 ```bash
